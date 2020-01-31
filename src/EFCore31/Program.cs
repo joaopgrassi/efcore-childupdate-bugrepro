@@ -134,6 +134,7 @@ namespace EFCore31
                 // State is "Detached"
                 var state2 = newContext.Entry(comment).State;
 
+                // Fails
                 await newContext.SaveChangesAsync();
             }
 
