@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace EFCore31
@@ -42,8 +43,7 @@ namespace EFCore31
             var comment = new WorkItemComment
             {
                 Id = Guid.NewGuid(),
-                Comment = "SOme comment",
-                ParentId = workItem.Id
+                Comment = "Some comment",
             };
 
             // Add the comment to the saved comment instance
@@ -79,8 +79,7 @@ namespace EFCore31
             var comment = new WorkItemComment
             {
                 Id = Guid.NewGuid(),
-                Comment = "SOme comment",
-                ParentId = workItem.Id
+                Comment = "Some comment",
             };
 
             workItem.Comments.Add(comment);
@@ -114,19 +113,18 @@ namespace EFCore31
             wiContext.WorkItems.Add(workItem);
             await wiContext.SaveChangesAsync();
 
-            var comment = new WorkItemComment
-            {
-                Id = Guid.NewGuid(),
-                Comment = "SOme comment",
-                ParentId = workItem.Id
-            };
-
             // simulates a "disconnected scenario" where I only want to add a comment
             // Like a request to an endpoint "AddComment"
             using (var newContext = new WorkItemDbContext())
             {
                 var existingWorkItem = await newContext.WorkItems.Include(wi => wi.Comments)
                     .FirstAsync(wi => wi.Id == workItem.Id);
+
+                var comment = new WorkItemComment
+                {
+                    Id = Guid.NewGuid(),
+                    Comment = "SOme comment",
+                };
 
                 existingWorkItem.Comments.Add(comment);
 
@@ -136,7 +134,6 @@ namespace EFCore31
                 // State is "Detached"
                 var state2 = newContext.Entry(comment).State;
 
-                // Works
                 await newContext.SaveChangesAsync();
             }
 

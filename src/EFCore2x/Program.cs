@@ -37,8 +37,7 @@ namespace EFCore2x
             var comment = new WorkItemComment
             {
                 Id = Guid.NewGuid(),
-                Comment = "SOme comment",
-                ParentId = workItem.Id
+                Comment = "Some comment",
             };
 
             // Add the comment to the saved comment instance
@@ -47,10 +46,10 @@ namespace EFCore2x
             // State is unchanged
             var workItemState = wiContext.Entry(workItem).State;
 
-            // PROBLEM: The comment has a state of Modified.
+            // State is Added
             var state2 = wiContext.Entry(comment).State;
 
-            // Call fails with UPDATE comment instead of insert
+            // Works
             await wiContext.SaveChangesAsync();
 
             var saved = await GetWorkItem(wiContext, workItem.Id);
@@ -74,8 +73,7 @@ namespace EFCore2x
             var comment = new WorkItemComment
             {
                 Id = Guid.NewGuid(),
-                Comment = "SOme comment",
-                ParentId = workItem.Id
+                Comment = "Some comment",
             };
 
             workItem.Comments.Add(comment);
@@ -109,13 +107,6 @@ namespace EFCore2x
             wiContext.WorkItems.Add(workItem);
             await wiContext.SaveChangesAsync();
 
-            var comment = new WorkItemComment
-            {
-                Id = Guid.NewGuid(),
-                Comment = "SOme comment",
-                ParentId = workItem.Id
-            };
-
             // simulates a "disconnected scenario" where I only want to add a comment
             // Like a request to an endpoint "AddComment"
             using (var newContext = new WorkItemDbContext())
@@ -123,12 +114,18 @@ namespace EFCore2x
                 var existingWorkItem = await newContext.WorkItems.Include(wi => wi.Comments)
                     .FirstAsync(wi => wi.Id == workItem.Id);
 
+                var comment = new WorkItemComment
+                {
+                    Id = Guid.NewGuid(),
+                    Comment = "Some comment",
+                };
+
                 existingWorkItem.Comments.Add(comment);
 
                 // State is "Detached"
                 var workItemState = newContext.Entry(workItem).State;
 
-                // State is "Detached"
+                // State is Added
                 var state2 = newContext.Entry(comment).State;
 
                 // Works
