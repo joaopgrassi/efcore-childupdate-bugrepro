@@ -128,8 +128,8 @@ namespace EFCore31
 
                 existingWorkItem.Comments.Add(comment);
 
-                // State is "Detached"
-                var workItemState = newContext.Entry(workItem).State;
+                // State is "Unchanged"
+                var workItemState = newContext.Entry(existingWorkItem).State;
 
                 // State is "Detached"
                 var state2 = newContext.Entry(comment).State;
